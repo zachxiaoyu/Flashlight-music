@@ -1,8 +1,10 @@
-package com.sit.a97022.retrofit;
+package com.sit.a97022.Flashlight;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -11,13 +13,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.Parameter;
-
-import retrofit2.Retrofit;
+import com.sit.a97022.Flashlight.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
     Camera camera=null;
     Button btnRequest;
     Button BtnRequest;
+    Handler handler;
+    boolean isOnclick=true;
+    boolean isLight=true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,17 +39,55 @@ public class MainActivity extends AppCompatActivity {
     btnRequest.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-               OpenLightOn();
+
+               if (isOnclick)
+               {
+                   OpenLightOn();
+                   new Light_light().start();
+                   isOnclick=false;
+               }
+
         }
     });
     BtnRequest.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            isLight=false;
             CloseLightOff();
         }
     });
-    }
+    handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.what ==456)
+            {
+                OpenLightOn();
 
+
+            }
+            return false;
+        }
+    });
+    }
+    class Light_light extends Thread{
+        int time;
+        @Override
+        public void run() {
+            while(isLight)
+            {
+                time = 50+(int )Math.random()*200;
+                try {
+                    Thread.sleep(time);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                CloseLightOff();
+                handler.sendEmptyMessage(456);
+            }
+
+        }
+    }
 
 
     //请求网络数据
@@ -91,32 +131,19 @@ public class MainActivity extends AppCompatActivity {
                 camera.stopPreview();
                 camera.release();
                 camera = null;
-            }else
-            {
-                Snackbar snackbar = Snackbar
-                        .make(this.findViewById(R.id.main1), "Message is deleted", Snackbar.LENGTH_LONG)
-                        .setAction("UNDO", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                               Toast.makeText(MainActivity.this,"闪光灯未在工作！",Toast.LENGTH_SHORT);
-                            }
-                        });
-
-
-                snackbar.show();
             }
         } catch (Exception e) {
-            Snackbar snackbar = Snackbar
-                    .make(this.findViewById(R.id.main1), "闪光灯未能打开！", Snackbar.LENGTH_LONG)
-                    .setAction("UNDO", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Toast.makeText(MainActivity.this,"闪光灯未在工作！",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-
-            snackbar.show();
+//            Snackbar snackbar = Snackbar
+//                    .make(this.findViewById(R.id.main1), "闪光灯未能打开！", Snackbar.LENGTH_LONG)
+//                    .setAction("UNDO", new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            Toast.makeText(MainActivity.this,"闪光灯未在工作！",Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//
+//
+//            snackbar.show();
         }
     }
 
